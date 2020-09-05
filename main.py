@@ -1,10 +1,12 @@
 # imports
 import pygame
 import sys
+import numpy as np
 
 # globals
 particle_size = 25
 snek = [[13, 13], [13, 14]]
+food_coords = []
 direction = 0
 pygame.init()
 clock = pygame.time.Clock()
@@ -13,6 +15,11 @@ screen = pygame.display.set_mode([700, 700])
 
 def draw():
     screen.fill((0, 100, 0))
+    for a in food_coords:
+        coords = [a[0] * particle_size, a[1] * particle_size]
+        pygame.draw.rect(screen, (255, 0, 0),
+                         (coords[0], coords[1],
+                          particle_size, particle_size), 0)
     head = True
     for x in snek:
         coords = [x[0] * particle_size, x[1] * particle_size]
@@ -27,6 +34,23 @@ def draw():
                               particle_size, particle_size), 0)
 
 
+def gen_food():
+    not_viable = True
+    while not_viable:
+        coord = [np.random.randint(0, 28), np.random.randint(0, 28)]
+        change = False
+        for x in snek:
+            if coord == x:
+                change = True
+        for x in food_coords:
+            if coord == x:
+                change = True
+        if not(change):
+            return coord
+
+
+# main
+food_coords.append(gen_food())
 go = True
 grow = None
 food_ind = -1
@@ -45,6 +69,12 @@ while go:
                 direction = 2
             if event.key == pygame.K_LEFT and direction != 1:
                 direction = 3
+
+    if grow != None:
+        snek.append(grow.copy())
+        grow = None
+        food_coords.pop(food_ind)
+    
     num = len(snek) - 1
     for i in range(1, len(snek)):
         snek[num] = snek[num - 1].copy()
@@ -57,6 +87,16 @@ while go:
         snek[0][1] += 1
     if direction == 3:
         snek[0][0] -= 1
+
+    for x in range(0, len(food_coords)):
+        if food_coords[x] == snek[0]:
+            grow = snek[-1].copy()
+            food_ind = x
+            score += 10
+    rand = np.random.randint(0, 100)
+    if rand <= 1 and len(food_coords) < 4 or len(food_coords) == 0:
+        food_coords.append(gen_food())
+
     if not(stop):
         draw()
         pygame.display.update()
