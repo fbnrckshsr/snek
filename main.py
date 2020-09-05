@@ -9,15 +9,22 @@ snek = [[13, 13], [13, 14]]
 food_coords = []
 direction = 0
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont('arialblack', 35)
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode([700, 700])
 
 
+def score_text(text, font):
+    text_space = font.render(text, True, (255, 255, 255))
+    return text_space, text_space.get_rect()
+
+
 def draw():
-    screen.fill((0, 100, 0))
+    screen.fill((102, 0, 51))
     for a in food_coords:
         coords = [a[0] * particle_size, a[1] * particle_size]
-        pygame.draw.rect(screen, (255, 0, 0),
+        pygame.draw.rect(screen, (255, 0, 127),
                          (coords[0], coords[1],
                           particle_size, particle_size), 0)
     head = True
@@ -29,7 +36,7 @@ def draw():
                               particle_size, particle_size), 0)
             head = False
         else:
-            pygame.draw.rect(screen, (47, 79, 79),
+            pygame.draw.rect(screen, (128, 128, 128),
                              (coords[0], coords[1],
                               particle_size, particle_size), 0)
 
@@ -74,7 +81,7 @@ while go:
         snek.append(grow.copy())
         grow = None
         food_coords.pop(food_ind)
-    
+
     num = len(snek) - 1
     for i in range(1, len(snek)):
         snek[num] = snek[num - 1].copy()
@@ -88,6 +95,14 @@ while go:
     if direction == 3:
         snek[0][0] -= 1
 
+    for x in range(1, len(snek)):
+        if snek[0] == snek[x]:
+            stop = True
+    if snek[0][0] < 0 or snek[0][0] > 27:
+        stop = True
+    if snek[0][1] < 0 or snek[0][1] > 27:
+        stop = True
+
     for x in range(0, len(food_coords)):
         if food_coords[x] == snek[0]:
             grow = snek[-1].copy()
@@ -99,9 +114,12 @@ while go:
 
     if not(stop):
         draw()
+        text_ground, text_box = score_text("Score: " + str(score), font)
+        text_box.center = (350, 40)
+        screen.blit(text_ground, text_box)
         pygame.display.update()
     else:
-        print("u reached " + str(score))
+        print("u reached " + str(score) + " points!")
         sys.exit()
     clock.tick(10)
 
